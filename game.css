@@ -1,0 +1,27 @@
+@import url('https://fonts.googleapis.com/css2?family=Bungee&display=swap');
+
+*{
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    
+}
+
+body{
+    background-image: url('images/game-bg.png');
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position: center center; 
+    min-height: 100vh;
+    margin: 0; 
+    padding: 0;
+    font-family: 'Bungee', cursive;
+}
+
+.title-memory{
+    text-align: center;
+    font-size: 3em;
+    color: #061b0e;
+    margin: 20px 0;
+    text-shadow: 2px 2px 4px rgba(15, 64, 15, 0.5);
+}
