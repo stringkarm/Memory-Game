@@ -1,8 +1,6 @@
 @import url('https://fonts.googleapis.com/css2?family=Bungee&display=swap');
 
 *{
-    margin: 0;
-    padding: 0;
     box-sizing: border-box;
     
 }
@@ -24,4 +22,70 @@ body{
     color: #061b0e;
     margin: 20px 0;
     text-shadow: 2px 2px 4px rgba(15, 64, 15, 0.5);
+    padding: 30px;
+}
+
+.card {
+  width: 200px; 
+  height: 200px; 
+  position: relative;
+  transform-style: preserve-3d;
+  transition: transform 0.5s;
+}
+
+.card.flip {
+  transform: rotateY(180deg);
+}
+
+.front-face, .back-face {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  backface-visibility: hidden;
+}
+
+.front-face {
+  transform: rotateY(180deg);
+}
+
+#game-board {
+  display: flex;
+  flex-wrap: wrap; 
+  justify-content: center; 
+  gap: 15px; 
+  max-width: 900px;
+  margin: 0 auto; 
+}
+
+#pushBtn{
+    padding: 10px 20px;
+    font-size: 1.2em;
+    color: #062813;
+    box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.8);
+    background-color: #28a745;
+    border: none;
+    border-radius: 20px;
+    cursor: pointer;
+    margin-top: 20px;
+    align-items: center;
+}
+
+#popBtn{
+    padding: 10px 20px;
+    font-size: 1.2em;
+    color: #062813;
+    box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.8);
+    background-color: #28a745;
+    border: none;
+    border-radius: 20px;
+    cursor: pointer;
+    margin-top: 20px;
+}
+
+.container-memory {
+    padding: 20px;
+    border-radius: 10px;
+    width: 680px;
+    background-color: rgba(139, 138, 138, 0.37);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
 }

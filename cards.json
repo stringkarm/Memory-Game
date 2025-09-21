@@ -1,0 +1,12 @@
+[
+    {"id": "cat","img": "animals/cat.png"},
+    {"id": "duck","img": "animals/duck.png"},
+    {"id": "elephant","img": "animals/elephant.png"},
+    {"id": "giraffe","img": "animals/girafe.png"},
+    {"id": "hipo","img": "animals/hipo.png"},
+    {"id": "lion","img": "animals/lion.png"},
+    {"id": "monkey","img": "animals/monkey.png"},
+    {"id": "penguin","img": "animals/penguin.png"},
+    {"id": "turtle","img": "animals/turtle.png"},
+    {"id": "zebra","img": "animals/zebra.png"}
+]
