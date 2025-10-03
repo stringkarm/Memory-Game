@@ -1,158 +1,104 @@
+let cardsData = [];
+let gameCards = []; // cards currently in play
+let flippedCards = [];
+let matchedCards = [];
 
-let initialCardsData = []; 
-let cards = [];
-let hasFlippedCard = false;
-let lockBoard = false;
-let firstCard, secondCard;
-let matchedPairs = 0;
+// Load cards.json
+fetch("cards.json")
+  .then(res => res.json())
+  .then(data => {
+    cardsData = data;
+    initGame();
+  });
 
-// DOM elements
-const gameBoard = document.getElementById('game-board');
-const pushButton = document.getElementById('pushBtn');
-const popButton = document.getElementById('popBtn');
-
-// --- Game Functions ---
-// Load card data from JSON and start the game
-async function loadCards() {
-  try {
-    const response = await fetch('cards.json');
-    const data = await response.json();
-    initialCardsData = data;
-    initializeGame();
-  } catch (error) {
-    console.error('Error loading cards.json:', error);
+function initGame() {
+  // start with 2 pairs (4 cards)
+  for (let i = 0; i < 2; i++) {
+    pushCardPair();
   }
+  renderBoard();
 }
 
-// Set up the initial game board with 4 cards
-function initializeGame() {
-  const initialPairs = initialCardsData.slice(0, 2);
-  cards = [...initialPairs, ...initialPairs];
-  shuffleCards();
-  createBoard();
-  resetState();
-}
+function renderBoard() {
+  const board = document.getElementById("game-board");
+  board.innerHTML = "";
+  gameCards.forEach((card, index) => {
+    const cardElement = document.createElement("div");
+    cardElement.classList.add("card");
+    if (card.matched) cardElement.style.visibility = "hidden";
 
-// Create and display the cards on the board
-function createBoard() {
-  gameBoard.innerHTML = '';
-  cards.forEach(card => {
-    const cardElement = document.createElement('div');
-    cardElement.classList.add('card');
-    cardElement.dataset.id = card.id;
+    cardElement.innerHTML = `
+      <div class="card-inner">
+        <div class="card-front"></div>
+        <div class="card-back" style="background-image: url(${card.img})"></div>
+      </div>
+    `;
 
-    const cardFront = document.createElement('img');
-    cardFront.classList.add('front-face');
-    cardFront.src = card.img;
-
-    const cardBack = document.createElement('img');
-    cardBack.classList.add('back-face');
-    cardBack.src = 'images/card-back.png'; // Make sure you have this image
-
-    cardElement.appendChild(cardFront);
-    cardElement.appendChild(cardBack);
-    cardElement.addEventListener('click', flipCard);
-    
-    gameBoard.appendChild(cardElement);
+    cardElement.addEventListener("click", () => flipCard(card, cardElement));
+    board.appendChild(cardElement);
   });
 }
 
-// Shuffle the cards using Fisher-Yates algorithm
-function shuffleCards() {
-  for (let i = cards.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [cards[i], cards[j]] = [cards[j], cards[i]];
+function flipCard(card, element) {
+  if (flippedCards.length === 2 || card.flipped || card.matched) return;
+
+  card.flipped = true;
+  element.classList.add("flipped");
+  flippedCards.push({ card, element });
+
+  if (flippedCards.length === 2) {
+    checkMatch();
   }
 }
 
-// Handle the card-flipping logic
-function flipCard() {
-  if (lockBoard) return;
-  if (this === firstCard) return;
-
-  this.classList.add('flip');
-
-  if (!hasFlippedCard) {
-    hasFlippedCard = true;
-    firstCard = this;
-    return;
-  }
-  secondCard = this;
-  checkForMatch();
-}
-
-// Check if the two flipped cards are a match
-function checkForMatch() {
-  const isMatch = firstCard.dataset.id === secondCard.dataset.id;
-  if (isMatch) {
-    matchedPairs++;
-    disableCards();
-    if (matchedPairs === cards.length / 2) {
-      setTimeout(() => alert('You won!'), 500);
-    }
+function checkMatch() {
+  const [first, second] = flippedCards;
+  if (first.card.id === second.card.id) {
+    first.card.matched = true;
+    second.card.matched = true;
+    matchedCards.push(first.card.id);
   } else {
-    unflipCards();
+    setTimeout(() => {
+      first.card.flipped = false;
+      second.card.flipped = false;
+      first.element.classList.remove("flipped");
+      second.element.classList.remove("flipped");
+    }, 1000);
+  }
+  flippedCards = [];
+}
+
+// Push → add new pair
+document.getElementById("pushBtn").addEventListener("click", () => {
+  pushCardPair();
+  shuffle(gameCards);
+  renderBoard();
+});
+
+function pushCardPair() {
+  if (gameCards.length / 2 >= cardsData.length) return; // no more pairs available
+  const randomIndex = Math.floor(Math.random() * cardsData.length);
+  const chosenCard = cardsData[randomIndex];
+  gameCards.push({ ...chosenCard, flipped: false, matched: false });
+  gameCards.push({ ...chosenCard, flipped: false, matched: false });
+  shuffle(gameCards);
+}
+
+// Pop → remove matched first, else last 2
+document.getElementById("popBtn").addEventListener("click", () => {
+  if (matchedCards.length > 0) {
+    const idToRemove = matchedCards.shift();
+    gameCards = gameCards.filter(c => c.id !== idToRemove);
+  } else {
+    gameCards.splice(-2, 2);
+  }
+  renderBoard();
+});
+
+// Shuffle helper
+function shuffle(array) {
+  for (let i = array.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [array[i], array[j]] = [array[j], array[i]];
   }
 }
-
-// Disable a pair of matched cards from being clicked again
-function disableCards() {
-  firstCard.removeEventListener('click', flipCard);
-  secondCard.removeEventListener('click', flipCard);
-  resetState();
-}
-
-// Flip back two non-matching cards
-function unflipCards() {
-  lockBoard = true;
-  setTimeout(() => {
-    firstCard.classList.remove('flip');
-    secondCard.classList.remove('flip');
-    resetState();
-  }, 1000);
-}
-
-// Reset the state for the next turn
-function resetState() {
-  [hasFlippedCard, lockBoard] = [false, false];
-  [firstCard, secondCard] = [null, null];
-}
-
-// --- Push/Pop Functions ---
-// Adds a new pair of cards to the game
-function pushCard() {
-  if (lockBoard) return;
-  
-  const availableCards = initialCardsData.filter(card => !cards.some(c => c.id === card.id));
-  if (availableCards.length === 0) {
-    alert("No more unique cards to add!");
-    return;
-  }
-  
-  const newCard = availableCards[Math.floor(Math.random() * availableCards.length)];
-  cards.push(newCard, newCard);
-  
-  matchedPairs = 0;
-  shuffleCards();
-  createBoard();
-}
-
-// Removes a random pair of cards from the game
-function popCard() {
-  if (lockBoard || cards.length <= 4) return;
-  
-  const uniqueCardIds = [...new Set(cards.map(card => card.id))];
-  const idToRemove = uniqueCardIds[Math.floor(Math.random() * uniqueCardIds.length)];
-  
-  cards = cards.filter(card => card.id !== idToRemove);
-  
-  matchedPairs = 0;
-  shuffleCards();
-  createBoard();
-}
-
-// --- Event Listeners and Initial Load ---
-pushButton.addEventListener('click', pushCard);
-popButton.addEventListener('click', popCard);
-
-window.onload = loadCards;
